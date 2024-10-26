@@ -1,6 +1,11 @@
 package br.edu.atitus.paradigma.produtoservice.entities;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 @Entity
 @Table(name = "produto")
@@ -16,6 +21,16 @@ public class ProdutoEntity {
 
     @Transient
     private String ambiente;
+    @Transient
+    private double valorConvertido;
+
+    public double getValorConvertido() {
+        return valorConvertido;
+    }
+
+    public void setValorConvertido(double valorConvertido) {
+        this.valorConvertido = valorConvertido;
+    }
 
     public Integer getId() {
         return id;
@@ -56,4 +71,5 @@ public class ProdutoEntity {
     public void setAmbiente(String ambiente) {
         this.ambiente = ambiente;
     }
+
 }

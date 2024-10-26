@@ -1,23 +1,32 @@
 package br.edu.atitus.paradigma.produtoservice.controllers;
 
-import br.edu.atitus.paradigma.produtoservice.entities.ProdutoEntity;
-import br.edu.atitus.paradigma.produtoservice.repositories.ProdutoRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import br.edu.atitus.paradigma.produtoservice.clients.CambioClient;
+import br.edu.atitus.paradigma.produtoservice.clients.CambioResponse;
+import br.edu.atitus.paradigma.produtoservice.entities.ProdutoEntity;
+import br.edu.atitus.paradigma.produtoservice.repositories.ProdutoRepository;
 
 @RestController
 @RequestMapping("produto-service")
 public class ProdutoController {
     private final ProdutoRepository repository;
+    private final CambioClient client;
 
-    public ProdutoController(ProdutoRepository repository) {
+    public ProdutoController(ProdutoRepository repository, CambioClient client) {
+        super();
         this.repository = repository;
+        this.client = client;
     }
 
     @Value("${server.port}")
     private int porta;
-
 
     @GetMapping("/{idProduto}/{moeda}")
     public ResponseEntity<ProdutoEntity> getProduto(
@@ -25,13 +34,18 @@ public class ProdutoController {
             @PathVariable String moeda) throws Exception {
         ProdutoEntity produto = repository.findById(idProduto)
                 .orElseThrow(() -> new Exception("Produto não encontrado"));
-        produto.setAmbiente("Servidor rodando na porta: " + porta);
+
+        CambioResponse cambio = client.getCambio(produto.getValor(), "USD", moeda);
+
+        produto.setValorConvertido(cambio.getValorConvertido());
+        produto.setAmbiente("Produto-service rodando na porta: " + porta + " - " + cambio.getAmbiente());
         return ResponseEntity.ok(produto);
+
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handler(Exception e) throws Exception {
-        String message = e.getMessage().replaceAll("[\\r\\n]","");
+    public ResponseEntity<String> handler(Exception e){
+        String message = e.getMessage().replaceAll("[\\r\\n]", "");
         return ResponseEntity.badRequest().body(message);
     }
 }

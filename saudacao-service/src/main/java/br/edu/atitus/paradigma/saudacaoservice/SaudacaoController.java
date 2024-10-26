@@ -29,5 +29,6 @@ public class SaudacaoController {
         String template = "%s %s!";
         if (nome == null) nome = nomePath == null ? saudacaoConfig.getNomePadrao() : nomePath;
         return ResponseEntity.ok(String.format(template, saudacaoConfig.getSaudacao(), nome));
+
     }
 }
